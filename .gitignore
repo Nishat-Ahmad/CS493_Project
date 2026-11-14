@@ -1,0 +1,82 @@
+# Byte-compiled / optimized / ambient files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Machine Learning / Deep Learning Weights & Checkpoints
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+*.safetensors
+*.bin
+*.h5
+weights/
+runs/
+
+# Data, Datasets & Output Results
+data/
+datasets/
+results/
+*.csv
+*.tsv
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+*-checkpoint.ipynb
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# IDEs and Code Editors
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs and Databases
+*.log
+*.sqlite3
+*.db
+
+# Build and Distribution
+build/
+dist/
+*.egg-info/
+.eggs/
