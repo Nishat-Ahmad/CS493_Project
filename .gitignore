@@ -1,9 +1,14 @@
-# Byte-compiled / optimized / ambient files
+# ==============================================================================
+# Python Bytecode & Optimization Caches
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
-# Testing and Coverage
+# ==============================================================================
+# Testing & Code Coverage
+# ==============================================================================
 .pytest_cache/
 .coverage
 .coverage.*
@@ -12,8 +17,11 @@ htmlcov/
 .nox/
 coverage.xml
 *.cover
+nosetests.xml
 
+# ==============================================================================
 # Virtual Environments
+# ==============================================================================
 .venv/
 venv/
 ENV/
@@ -21,7 +29,9 @@ env/
 env.bak/
 venv.bak/
 
-# Machine Learning / Deep Learning Weights & Checkpoints
+# ==============================================================================
+# Model Weights, Checkpoints & Large Neural Network Files
+# ==============================================================================
 *.pt
 *.pth
 *.onnx
@@ -30,26 +40,60 @@ venv.bak/
 *.safetensors
 *.bin
 *.h5
+*.ckpt
 weights/
 runs/
 
-# Data, Datasets & Output Results
-data/
-datasets/
+# ==============================================================================
+# Raw Videos, Media & Archive Datasets
+# ==============================================================================
+# High-volume video files
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.webm
+
+# Large archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Specific dataset folders & archives
+TU-DAT-main/
+data/tudat/
+data/synthetic_sequence/
+data/calibration/
+
+# Nested duplicate directory
+Comms/
+
+# ==============================================================================
+# Benchmark Outputs & Results
+# ==============================================================================
 results/
 *.csv
 *.tsv
 
+# ==============================================================================
 # Jupyter Notebook Checkpoints
+# ==============================================================================
 .ipynb_checkpoints
 *-checkpoint.ipynb
 
-# Environment Variables & Secrets
+# ==============================================================================
+# Environment Variables & Sensitive Credentials
+# ==============================================================================
 .env
 .env.*
 !.env.example
 
+# ==============================================================================
 # IDEs and Code Editors
+# ==============================================================================
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -60,7 +104,11 @@ results/
 *.swo
 *~
 
-# Operating System Files
+# ==============================================================================
+# Operating System Files & Extraction Artifacts
+# ==============================================================================
+__MACOSX/
+*/__MACOSX/
 .DS_Store
 .DS_Store?
 ._*
@@ -70,12 +118,16 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Logs and Databases
+# ==============================================================================
+# Logs & Local Databases
+# ==============================================================================
 *.log
 *.sqlite3
 *.db
 
-# Build and Distribution
+# ==============================================================================
+# Build & Distribution
+# ==============================================================================
 build/
 dist/
 *.egg-info/
