@@ -34,7 +34,13 @@ from benchmark.metrics import (
     compute_iou
 )
 from data.generate_mock_data import generate_mock_dataset
-from data.dataset_loader import SequenceDataset
+from data.dataset_loader import (
+    SequenceDataset,
+    FrameAnnotation,
+    TUDATSequence,
+    TUDATBenchmarkDataset,
+    load_dataset
+)
 
 
 # -----------------------------------------------------------------------------
@@ -231,4 +237,45 @@ def test_mock_data_generation():
         assert frame_img is not None
         assert frame_img.shape == (320, 320, 3)
         assert len(annos) == 2, "Expected 2 vehicles in frame 0"
+
+
+def test_tudat_benchmark_dataset_discovery():
+    """Verify TU-DAT real-world roadside anomaly sequence loading and annotation parsing."""
+    repo_root = Path(__file__).resolve().parent.parent
+    tudat_candidates = [
+        repo_root / "data" / "tudat",
+        repo_root / "TU-DAT-main"
+    ]
+    tudat_dir = next((c for c in tudat_candidates if (c / "videos").exists()), None)
+    if tudat_dir is None:
+        pytest.skip("TU-DAT videos directory not found, skipping real-world data test.")
+
+    benchmark = TUDATBenchmarkDataset(base_dir=tudat_dir, target_resolution=(640, 640))
+    assert len(benchmark.positive_sequences) == 10, f"Expected 10 positive videos, got {len(benchmark.positive_sequences)}"
+    assert len(benchmark.negative_sequences) == 5, f"Expected 5 negative videos, got {len(benchmark.negative_sequences)}"
+    assert len(benchmark) == 15
+
+    # Test sample positive crash sequence
+    seq_v1 = benchmark["v1"]
+    assert seq_v1.is_anomaly is True
+    assert seq_v1.fps > 50.0
+    assert seq_v1.accident_frame is not None and seq_v1.accident_frame > 0
+    assert len(seq_v1.annotations_by_frame) > 0
+
+    # Test sample challenging adverse lighting sequence
+    seq_v36 = benchmark["v36"]
+    assert seq_v36.scenario_tag == "challenging_adverse_light"
+    assert seq_v36.accident_frame == 166
+
+    # Test sample negative control sequence
+    seq_v47 = benchmark["v47"]
+    assert seq_v47.is_anomaly is False
+    assert seq_v47.accident_frame is None
+    assert seq_v47.scenario_tag == "negative_control"
+
+    # Test summary catalog output
+    summary = benchmark.summary()
+    assert len(summary) == 15
+    assert all("sequence" in row and "fps" in row and "accident_frame" in row for row in summary)
+
 
