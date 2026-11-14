@@ -49,11 +49,15 @@ def export_fp32_onnx(model_variant: str, weights_dir: Path) -> Path:
         print(f"[Export] {target_onnx.name} already exists. Skipping FP32 export.")
         return target_onnx
 
-    pt_name = f"{model_variant}.pt"
-    print(f"[Export] Loading {pt_name}...")
-    model = YOLO(pt_name)
+    pt_candidates = [
+        weights_dir / f"{model_variant}.pt",
+        Path(f"{model_variant}.pt"),
+    ]
+    pt_target = next((p for p in pt_candidates if p.exists()), Path(f"{model_variant}.pt"))
+    print(f"[Export] Loading {pt_target}...")
+    model = YOLO(str(pt_target))
 
-    print(f"[Export] Exporting {pt_name} to FP32 ONNX (static 1x3x640x640)...")
+    print(f"[Export] Exporting {pt_target.name} to FP32 ONNX (static 1x3x640x640)...")
     exported = model.export(
         format="onnx",
         imgsz=640,
@@ -87,12 +91,16 @@ def export_fp16_onnx(model_variant: str, weights_dir: Path, fp32_onnx_path: Path
         print(f"[Export] {target_onnx.name} already exists. Skipping FP16 export.")
         return target_onnx
 
-    pt_name = f"{model_variant}.pt"
+    pt_candidates = [
+        weights_dir / f"{model_variant}.pt",
+        Path(f"{model_variant}.pt"),
+    ]
+    pt_target = next((p for p in pt_candidates if p.exists()), Path(f"{model_variant}.pt"))
     exported_direct = False
 
     try:
-        print(f"[Export] Attempting direct FP16 export for {pt_name}...")
-        model = YOLO(pt_name)
+        print(f"[Export] Attempting direct FP16 export for {pt_target.name}...")
+        model = YOLO(str(pt_target))
         exported = model.export(
             format="onnx",
             imgsz=640,
