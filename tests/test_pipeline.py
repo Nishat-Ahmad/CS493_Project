@@ -155,6 +155,73 @@ def test_sustained_collision_alert():
     assert predictor.first_sustained_frame == 3
 
 
+def test_lateral_trajectory_filter_suppresses_opposite_lane_false_alarms():
+    """Verify that lateral trajectory filtering prevents false alarms for opposite lane vehicles."""
+    # Case: Two vehicles approaching each other on parallel lanes separated by 120 pixels laterally
+    # Lane 1 (y=200, moving rightwards +2 px/frame): bbox size 60x40
+    # Lane 2 (y=320, moving leftwards -2 px/frame):  bbox size 60x40
+    p1 = (100.0, 200.0)
+    p2 = (300.0, 320.0)
+    v1 = (2.0, 0.0)
+    v2 = (-2.0, 0.0)
+    bbox1 = [70.0, 180.0, 130.0, 220.0]
+    bbox2 = [270.0, 300.0, 330.0, 340.0]
+
+    # Without lateral filtering (naive line-of-sight closing speed)
+    res_naive = compute_ttc_pair(
+        p1=p1, p2=p2, v1=v1, v2=v2, fps=30.0,
+        bbox1=bbox1, bbox2=bbox2, enable_lateral_filtering=False
+    )
+    # Naive filter sees closing distance and erroneously reports finite TTC
+    assert math.isfinite(res_naive.ttc), "Naive filter without lateral clearance triggers false alert"
+    assert res_naive.ttc < 3.0
+
+    # With lateral trajectory filtering enabled (our fix)
+    res_filtered = compute_ttc_pair(
+        p1=p1, p2=p2, v1=v1, v2=v2, fps=30.0,
+        bbox1=bbox1, bbox2=bbox2, enable_lateral_filtering=True
+    )
+    # Filter correctly computes lateral miss distance d_min = 120px > R_coll (~72px)
+    assert res_filtered.d_min > res_filtered.r_coll, f"Expected d_min ({res_filtered.d_min}) > r_coll ({res_filtered.r_coll})"
+    assert not res_filtered.is_collision_course, "Parallel lane vehicles must not be flagged as collision course"
+    assert math.isinf(res_filtered.ttc), "Filtered TTC should be infinity for safe lane pass"
+
+    # Verify that CollisionPredictor suppresses alerts across multiple frames
+    predictor = CollisionPredictor(tau_threshold=2.5, consecutive_frames_threshold=3, fps=30.0, enable_lateral_filtering=True)
+    opposite_lane_tracks = [
+        {"id": 1, "center": p1, "velocity": v1, "bbox": bbox1},
+        {"id": 2, "center": p2, "velocity": v2, "bbox": bbox2},
+    ]
+    for f in range(1, 10):
+        alerts = predictor.evaluate_frame(f, opposite_lane_tracks)
+        assert len(alerts) == 0, f"Frame {f} should have 0 alerts with lateral trajectory filtering"
+    assert predictor.first_sustained_frame is None
+
+
+def test_negative_control_videos_zero_false_positive_rate():
+    """Verify that normal traffic control sequences yield 0.0 False Positive Rate."""
+    from tracking.collision_kinematics import evaluate_negative_controls
+
+    repo_root = Path(__file__).resolve().parent.parent
+    tudat_candidates = [
+        repo_root / "data" / "tudat",
+        repo_root / "TU-DAT-main"
+    ]
+    tudat_dir = next((c for c in tudat_candidates if (c / "videos").exists()), None)
+    if tudat_dir is None:
+        pytest.skip("TU-DAT videos directory not found, skipping negative control FPR test.")
+
+    benchmark = TUDATBenchmarkDataset(base_dir=tudat_dir, target_resolution=(640, 640))
+    if len(benchmark.negative_sequences) == 0:
+        pytest.skip("No negative control sequences found.")
+
+    results = evaluate_negative_controls(benchmark, tau_threshold=2.5, consecutive_frames_threshold=3)
+    assert results["total_sequences"] == 5, f"Expected 5 negative control sequences, got {results['total_sequences']}"
+    assert results["false_alarms"] == 0, f"Expected 0 false alarms, got {results['false_alarms']}"
+    assert results["false_positive_rate"] == 0.0, f"Expected 0.0 FPR, got {results['false_positive_rate']}"
+
+
+
 # -----------------------------------------------------------------------------
 # 3. Metric Calculation Tests
 # -----------------------------------------------------------------------------
