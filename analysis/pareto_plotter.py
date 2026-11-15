@@ -102,6 +102,7 @@ def plot_pareto_throughput_vs_rtm(
         edge_width = 2.5 if is_front else 0.8
         alpha = 0.95 if is_front else 0.70
 
+        # Plot scatter point
         ax.scatter(
             row["fps"],
             row["rtm_seconds"],
@@ -113,6 +114,21 @@ def plot_pareto_throughput_vs_rtm(
             alpha=alpha,
             zorder=4 if is_front else 3
         )
+
+        # Add Mean ± Std error bars if available
+        if "std_fps" in row and "std_rtm_seconds" in row and not pd.isna(row["std_fps"]) and not pd.isna(row["std_rtm_seconds"]):
+            ax.errorbar(
+                row["fps"],
+                row["rtm_seconds"],
+                xerr=float(row["std_fps"]),
+                yerr=float(row["std_rtm_seconds"]),
+                fmt="none",
+                ecolor=c,
+                alpha=0.45,
+                capsize=3,
+                elinewidth=1.2,
+                zorder=2
+            )
 
         # Annotate config label
         offset_y = 0.04 if is_front else -0.05
@@ -197,23 +213,29 @@ def plot_jitter_vs_precision(
 
     nano_jitters: List[float] = []
     small_jitters: List[float] = []
+    nano_errs: List[float] = []
+    small_errs: List[float] = []
 
     for p in precisions:
         # Nano
         row_n = df[(df["variant"] == "yolo11n") & (df["precision"] == p)]
         nano_jitters.append(float(row_n["jitter_variance"].values[0]) if not row_n.empty else 0.0)
+        n_err = float(row_n["std_jitter_variance"].values[0]) if not row_n.empty and "std_jitter_variance" in row_n and not pd.isna(row_n["std_jitter_variance"].values[0]) else 0.0
+        nano_errs.append(n_err)
 
         # Small
         row_s = df[(df["variant"] == "yolo11s") & (df["precision"] == p)]
         small_jitters.append(float(row_s["jitter_variance"].values[0]) if not row_s.empty else 0.0)
+        s_err = float(row_s["std_jitter_variance"].values[0]) if not row_s.empty and "std_jitter_variance" in row_s and not pd.isna(row_s["std_jitter_variance"].values[0]) else 0.0
+        small_errs.append(s_err)
 
     x = np.arange(len(precisions))
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(8.5, 5.5), dpi=300)
 
-    rects1 = ax.bar(x - width / 2.0, nano_jitters, width, label="YOLOv11-Nano", color="#3b82f6", edgecolor="black", alpha=0.85)
-    rects2 = ax.bar(x + width / 2.0, small_jitters, width, label="YOLOv11-Small", color="#ef4444", edgecolor="black", alpha=0.85)
+    rects1 = ax.bar(x - width / 2.0, nano_jitters, width, yerr=nano_errs if any(e > 0 for e in nano_errs) else None, capsize=4, label="YOLOv11-Nano", color="#3b82f6", edgecolor="black", alpha=0.85)
+    rects2 = ax.bar(x + width / 2.0, small_jitters, width, yerr=small_errs if any(e > 0 for e in small_errs) else None, capsize=4, label="YOLOv11-Small", color="#ef4444", edgecolor="black", alpha=0.85)
 
     ax.set_title(
         "Trajectory Coordinate Jitter Variance Across Numerical Precisions\n"

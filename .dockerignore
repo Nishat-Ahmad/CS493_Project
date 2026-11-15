@@ -1,0 +1,16 @@
+.git
+.github
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+data/tudat/
+data/calibration/
+data/synthetic_sequence/
+results/*.csv
+results/*.json
+results/*.png
+*.log

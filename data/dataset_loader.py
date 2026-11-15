@@ -305,9 +305,12 @@ class SequenceDataset:
             return cv2.imread(str(self.frame_paths[index]))
 
         if self.video_cap is not None:
-            self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, float(index))
+            if not hasattr(self, "_current_frame_pos") or self._current_frame_pos != index:
+                self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, float(index))
+                self._current_frame_pos = index
             ret, frame = self.video_cap.read()
             if ret and frame is not None:
+                self._current_frame_pos += 1
                 return frame
 
         return None
@@ -330,6 +333,7 @@ class SequenceDataset:
         if self.video_cap is not None:
             self.video_cap.release()
             self.video_cap = None
+        self._current_frame_pos = -1
 
 
 class TUDATSequence(SequenceDataset):

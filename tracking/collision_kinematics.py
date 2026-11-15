@@ -125,8 +125,13 @@ def compute_ttc_pair(
     dot_product = dx * v_rel_x + dy * v_rel_y
     v_c = dot_product / (distance + 1e-6)
 
-    # If relative speed is negligible or vehicles are diverging along line-of-sight
-    if v_rel_mag < 1e-3 or dot_product <= 0:
+    # Stationary / parked vehicle filtering: at least one vehicle must be in active motion
+    v1_speed = math.sqrt(vx1_s * vx1_s + vy1_s * vy1_s)
+    v2_speed = math.sqrt(vx2_s * vx2_s + vy2_s * vy2_s)
+    min_moving_speed = 30.0  # px/s in 640x640 coordinate space (~0.5 px/frame at 60 FPS)
+
+    # If both vehicles are stationary or vehicles are diverging along line-of-sight
+    if max(v1_speed, v2_speed) < min_moving_speed or v_rel_mag < 1.0 or dot_product <= 0:
         return TTCResult(
             ttc=float("inf"),
             v_c=v_c,
@@ -151,24 +156,22 @@ def compute_ttc_pair(
         h1 = max(10.0, float(bbox1[3] - bbox1[1]))
         w2 = max(10.0, float(bbox2[2] - bbox2[0]))
         h2 = max(10.0, float(bbox2[3] - bbox2[1]))
-        size1 = math.sqrt(w1 * w1 + h1 * h1)
-        size2 = math.sqrt(w2 * w2 + h2 * h2)
-        r_coll = 0.5 * (size1 + size2) * lateral_margin_factor
+        # Effective radius: average half-dimension (inradius)
+        r1 = 0.25 * (w1 + h1)
+        r2 = 0.25 * (w2 + h2)
+        r_coll = (r1 + r2) * lateral_margin_factor
     else:
         # Fallback radius when bounding box dimensions are not provided
-        r_coll = 60.0 * lateral_margin_factor
+        r_coll = 35.0 * lateral_margin_factor
 
     # 5. Evaluate Trajectory Intersection & Lateral Clearance
     if enable_lateral_filtering and (bbox1 is not None and bbox2 is not None):
         # A collision course requires the lateral miss distance to be within collision radius
-        is_collision = (d_min <= r_coll) and (t_cpa > 0.0)
-
-        # Immediate contact override: if boxes are already overlapping currently
-        if compute_boxes_intersection(bbox1, bbox2):
-            is_collision = True
+        # and closest approach in the future with non-negligible closing speed
+        is_collision = (d_min <= r_coll) and (t_cpa > 0.05) and (v_c >= 15.0)
     else:
-        # Standard line-of-sight check (backwards compatibility for basic tests)
-        is_collision = (v_c > 1e-3)
+        # Standard line-of-sight check
+        is_collision = (v_c >= 15.0)
 
     if is_collision and t_cpa > 0.0:
         ttc = t_cpa

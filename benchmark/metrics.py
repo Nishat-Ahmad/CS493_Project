@@ -184,7 +184,7 @@ def compute_coordinate_jitter(track_trajectories: Dict[int, List[Tuple[float, fl
 
 
 def compute_rtm(
-    accident_frame: int,
+    accident_frame: Optional[int],
     first_sustained_alert_frame: Optional[int],
     video_fps: float = 30.0
 ) -> float:
@@ -194,14 +194,14 @@ def compute_rtm(
         RTM = max(0, F_accident - F_first_sustained_alert) / FPS_video
 
     Args:
-        accident_frame: Ground truth impact frame index.
+        accident_frame: Ground truth impact frame index, or None if no accident.
         first_sustained_alert_frame: Frame where sustained alert condition was achieved.
         video_fps: Video framerate.
 
     Returns:
         rtm: Resolution Time Margin in seconds.
     """
-    if first_sustained_alert_frame is None or first_sustained_alert_frame > accident_frame:
+    if accident_frame is None or first_sustained_alert_frame is None or first_sustained_alert_frame > accident_frame:
         return 0.0
 
     margin_frames = max(0, accident_frame - first_sustained_alert_frame)

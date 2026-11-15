@@ -45,15 +45,20 @@ def print_step_banner(step_num: int, title: str) -> None:
 def step_1_prepare_dataset(repo_root: Path) -> Path:
     """Check dataset existence or synthesize mock dataset."""
     print_step_banner(1, "Dataset Preparation")
+    tudat_dir = repo_root / "data" / "tudat"
     seq_dir = repo_root / "data" / "synthetic_sequence"
     calib_dir = repo_root / "data" / "calibration"
 
+    if (tudat_dir / "videos").exists() and (tudat_dir / "annotations").exists():
+        print(f"[Step 1] Found TU-DAT real-world roadside anomaly dataset in {tudat_dir}.")
+        return tudat_dir
+
     if (seq_dir / "annotations.json").exists() and calib_dir.exists() and len(list(calib_dir.glob("*.jpg"))) >= 30:
         print(f"[Step 1] Found existing sequence in {seq_dir} and calibration frames in {calib_dir}.")
-    else:
-        print("[Step 1] Dataset or calibration frames not found. Generating synthetic video sequence...")
-        generate_mock_dataset(output_base_dir=repo_root / "data")
+        return seq_dir
 
+    print("[Step 1] Dataset or calibration frames not found. Generating synthetic video sequence...")
+    generate_mock_dataset(output_base_dir=repo_root / "data")
     return seq_dir
 
 
@@ -91,9 +96,12 @@ def step_3_export_and_quantize(repo_root: Path) -> None:
 def step_4_execute_benchmark(repo_root: Path) -> Path:
     """Run simulated edge CPU benchmark across 6 model configurations."""
     print_step_banner(4, "Simulated Edge Benchmark Execution")
+    tudat_dir = repo_root / "data" / "tudat"
+    dataset_path = tudat_dir if tudat_dir.exists() else (repo_root / "data" / "synthetic_sequence")
+
     runner = EdgeBenchmarkRunner(
         weights_dir=repo_root / "weights",
-        dataset_path=repo_root / "data" / "synthetic_sequence",
+        dataset_path=dataset_path,
         results_dir=repo_root / "results",
         num_threads=4,
         warmup_frames=10
@@ -122,12 +130,17 @@ def step_6_display_summary_table(summary_csv_path: Path) -> None:
         "config",
         "variant",
         "precision",
-        "mean_latency_ms",
         "fps",
+        "std_fps",
+        "mean_latency_ms",
+        "std_latency_ms",
+        "p95_latency_ms",
         "map50",
+        "std_map50",
         "jitter_variance",
-        "first_sustained_alert_frame",
-        "rtm_seconds"
+        "rtm_seconds",
+        "std_rtm_seconds",
+        "false_positive_rate"
     ]
     sub_df = df[[c for c in display_cols if c in df.columns]].copy()
 
@@ -136,16 +149,21 @@ def step_6_display_summary_table(summary_csv_path: Path) -> None:
         "config": "Configuration",
         "variant": "Variant",
         "precision": "Precision",
-        "mean_latency_ms": "Latency (ms)",
-        "fps": "Throughput (FPS)",
+        "fps": "FPS",
+        "std_fps": "± FPS",
+        "mean_latency_ms": "Lat (ms)",
+        "std_latency_ms": "± Lat",
+        "p95_latency_ms": "p95 (ms)",
         "map50": "mAP@50",
+        "std_map50": "± mAP",
         "jitter_variance": "Jitter (px²)",
-        "first_sustained_alert_frame": "Alert Frame",
-        "rtm_seconds": "RTM (s)"
+        "rtm_seconds": "RTM (s)",
+        "std_rtm_seconds": "± RTM",
+        "false_positive_rate": "FPR (%)"
     }
     sub_df.rename(columns=rename_map, inplace=True)
 
-    header_line = "=" * 105
+    header_line = "=" * 120
     print(header_line)
     print("EDGE HARDWARE CONSTRAINTS: 4 CPU Cores | 4GB RAM | 640x640 Input | Real-Time Threshold: 20 FPS")
     print(header_line)
@@ -154,6 +172,7 @@ def step_6_display_summary_table(summary_csv_path: Path) -> None:
     print("\nBenchmark outputs stored in 'results/':")
     print("  - results/benchmark_summary.csv")
     print("  - results/benchmark_summary.json")
+    print("  - results/benchmark_sequences_detail.csv")
     print("  - results/pareto_throughput_vs_rtm.png")
     print("  - results/jitter_vs_precision.png\n")
 
