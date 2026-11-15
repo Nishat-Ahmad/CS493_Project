@@ -196,6 +196,61 @@
   .pill-green { background: #dcfce7; color: #166534; }
   .pill-red { background: #fee2e2; color: #991b1b; }
   .pill-blue { background: #dbeafe; color: #1e40af; }
+  .qa-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #2563eb;
+    border-radius: 4px;
+    padding: 7px 11px;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+  .qa-card.domain-systems { border-left-color: #0d9488; }
+  .qa-card.domain-ml { border-left-color: #7c3aed; }
+  .qa-card.domain-kinematics { border-left-color: #ea580c; }
+  .qa-card.domain-safety { border-left-color: #dc2626; }
+  .qa-card.domain-deploy { border-left-color: #0284c7; }
+  .qa-q {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #0f172a;
+    margin-bottom: 3px;
+  }
+  .qa-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: 6.8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 3px;
+    margin-right: 5px;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+  }
+  .badge-scope { background: #2563eb; }
+  .badge-ml { background: #7c3aed; }
+  .badge-kinematics { background: #ea580c; }
+  .badge-safety { background: #dc2626; }
+  .badge-deploy { background: #0284c7; }
+  .qa-a {
+    font-size: 8.5pt;
+    color: #334155;
+    line-height: 1.42;
+    margin: 0;
+    text-align: justify;
+  }
+  .qa-a strong {
+    color: #0f172a;
+  }
+  .qa-domain-title {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    border-bottom: 1px solid #94a3b8;
+    padding-bottom: 2px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
@@ -502,7 +557,118 @@ The repository is engineered into clean, production-grade, modular Python compon
   <li><b><code>tests/test_pipeline.py</code></b>: 9 comprehensive pytest verification tests covering Kalman lifecycle, TTC convergence/divergence, lateral filtering, dataset discovery, and metric calculation.</li>
 </ul>
 
-<h2>6. Final Academic Conclusions for CS 493</h2>
+<div class="page-break"></div>
+
+<!-- Page 5: Defense & Technical Examination Q&A Reference Guide -->
+<h2>6. Academic Defense & Technical Examination Q&amp;A Reference Guide</h2>
+<p>
+This section provides rigorous, empirically grounded defenses for anticipated examination questions from course instructors, academic evaluators, and CS/AI systems researchers.
+</p>
+
+<div class="qa-domain-title">Domain 1: Research Scoping, Hardware Limits &amp; Problem Formulation</div>
+
+<div class="qa-card">
+  <div class="qa-q"><span class="qa-badge badge-scope">Scope</span> Q1.1: Why restrict the project exclusively to Gap A and drop Gaps B and C?</div>
+  <p class="qa-a"><strong>Perceptual Latency as a Prerequisite Gatekeeper:</strong> In real-time safety-critical cyber-physical systems, inference latency operates as a binary gatekeeper. If the frame processing rate collapses below the real-time threshold (&le; 20–30 FPS), downstream temporal trajectory forecasting (Gap C) or low-level compiler optimization (Gap B) cannot prevent a crash because the system suffers significant intra-frame blind travel (&gt; 2.6 m at 60 km/h). Furthermore, resolving low-level integer compiler arithmetic (Gap B) requires custom silicon/microarchitecture kernel engineering outside a 10-week vision scope, whereas isolating Gap A yields immediate, actionable empirical boundaries (FPS, mAP@50, RTM) directly reproducible on standardized edge quotas.</p>
+</div>
+
+<div class="qa-card domain-systems">
+  <div class="qa-q"><span class="qa-badge badge-scope">Hardware</span> Q1.2: Why were 4 CPU cores and 4GB RAM chosen instead of evaluating on a GPU or edge development board?</div>
+  <p class="qa-a"><strong>Roadside Thermal and Power Constraints:</strong> Real-world roadside Intelligent Transportation Systems (ITS) units are housed inside IP67-sealed, unventilated outdoor enclosures mounted on traffic gantries and poles, operating under passive 10W–15W thermal envelopes and IEEE 802.3at PoE+ power budgets (&le; 25.5 W). Active cooling fans fail outdoors due to dust, humidity, and vibration, ruling out power-hungry discrete GPUs. Standard commercial roadside SoCs (Raspberry Pi 5 [quad-core Cortex-A76], NVIDIA Jetson Nano CPU cluster [quad-core Cortex-A57], NXP i.MX 8M Quad, and Intel Atom x6425RE) universally feature 4 CPU cores and 4GB RAM. Enforcing these constraints via Linux POSIX cgroups (<code>--cpus="4.0" --memory="4g"</code>) / physical affinity pinning provides a standardized, hardware-agnostic benchmark eliminating physical procurement dependencies.</p>
+</div>
+
+<div class="qa-card">
+  <div class="qa-q"><span class="qa-badge badge-scope">Models</span> Q1.3: Why evaluate YOLO26 Nano and Small, rather than Medium or Large variants?</div>
+  <p class="qa-a"><strong>Inflection Boundary Identification:</strong> The Nano-to-Small transition represents the exact empirical inflection boundary where real-time feasibility collapses. YOLO26-Small already collapsed throughput to 6.24–10.64 FPS (94–160 ms/frame) under 4-core constraints. Scaling further to Medium (25M+ parameters) or Large (40M+ parameters) on an edge CPU would yield single-frame latencies exceeding 400–800 ms (1–2 FPS), which are self-evidently non-viable for sub-second collision avoidance. Benchmarking Nano vs. Small identifies the exact tipping point where model capacity exceeds edge CPU compute capability.</p>
+</div>
+
+<div class="qa-card">
+  <div class="qa-q"><span class="qa-badge badge-scope">Architecture</span> Q1.4: Why benchmark the bleeding-edge YOLO26 instead of earlier YOLOv8 or YOLOv11 generations?</div>
+  <p class="qa-a"><strong>Contemporary Architectural Relevance:</strong> YOLO26 introduces the latest architectural innovations in single-shot detection, including optimized backbone depth-to-width ratios, streamlined cross-stage partial connections, and refined decoupled detection heads. Evaluating YOLO26 provides contemporary academic and industrial relevance, empirically answering whether the newest architectural enhancements can overcome the edge CPU latency barrier without dedicated neural acceleration hardware.</p>
+</div>
+
+<div class="qa-domain-title">Domain 2: Deep Learning, ONNX &amp; Numerical Quantization Mechanics</div>
+
+<div class="qa-card domain-ml">
+  <div class="qa-q"><span class="qa-badge badge-ml">Quantization</span> Q2.1: Why was INT8 slower (17.02 FPS) than FP32 (31.87 FPS) and FP16 (32.05 FPS) on the 4-core CPU?</div>
+  <p class="qa-a"><strong>The CPU Quantization Paradox:</strong> INT8 Post-Training Quantization (PTQ) accelerates inference <em>only</em> when the CPU microarchitecture contains dedicated hardware vector dot-product pipelines (e.g., Intel AVX-512 VNNI, AMX, or ARM NEON <code>i8mm</code>). General-purpose x86/ARM CPU cores without these instructions lack single-cycle integer dot-product execution units. Consequently, ONNX Runtime must execute <code>QuantizeLinear</code> and <code>DequantizeLinear</code> (QDQ) nodes via software emulation: unpacking 8-bit integers, casting to floating-point registers, performing math, and re-quantizing. This software emulation overhead exceeds the memory bandwidth savings of smaller weights, dropping throughput by ~47% compared to FP16.</p>
+</div>
+
+<div class="qa-card domain-ml">
+  <div class="qa-q"><span class="qa-badge badge-ml">Quantization</span> Q2.2: Why did you explicitly protect the 79 detection head nodes in FP32 during INT8 quantization?</div>
+  <p class="qa-a"><strong>Coordinate Discretization Prevention:</strong> Single-shot detectors use regression heads to output continuous bounding box coordinate offsets, dimensions, and distribution focal loss (DFL). Quantizing these sensitive regression layers to 8-bit discrete integers causes severe coordinate clipping, loss of spatial granularity, and grid discretization error. Without head protection, predicted bounding-box coordinates oscillate wildly across frames (inducing catastrophic coordinate jitter) or collapse to zero detections. Protecting the 79 nodes in <code>model.23</code> maintains full floating-point precision for coordinate regression while successfully compressing 65.3% of the backbone and feature pyramid network.</p>
+</div>
+
+<div class="qa-card domain-ml">
+  <div class="qa-q"><span class="qa-badge badge-ml">Precision</span> Q2.3: How does FP16 achieve higher throughput than FP32 on an x86 CPU lacking native float16 ALUs?</div>
+  <p class="qa-a"><strong>Cache Locality and Memory Bus Bandwidth:</strong> The YOLO26-Nano FP16 model occupies 4.75 MB, compared to 9.47 MB in FP32. Modern quad-core CPUs typically possess 4MB–8MB of shared L3 cache. The FP16 weight tensor fits almost entirely within the on-chip CPU cache, drastically reducing external RAM bus traffic, memory stalls, and instruction cache misses during continuous video decoding.</p>
+</div>
+
+<div class="qa-card domain-ml">
+  <div class="qa-q"><span class="qa-badge badge-ml">Calibration</span> Q2.4: Why choose static Post-Training Quantization (PTQ) over dynamic quantization or QAT?</div>
+  <p class="qa-a"><strong>Zero-Overhead Runtime vs Training Feasibility:</strong> Dynamic quantization calculates scale and zero-point parameters dynamically for activations during runtime, introducing substantial per-frame latency overhead on embedded CPUs. Static PTQ precomputes activation distributions offline using a representative calibration dataset (144 diverse traffic frames from TU-DAT), fixing quantization parameters for zero runtime overhead. While QAT can yield marginally higher accuracy, it requires retraining on entire datasets with labeled ground truth, making it computationally expensive and infeasible for rapid zero-shot deployment across diverse edge fleets.</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- Page 6: Tracking, Kinematics, Safety & Deployment -->
+<div class="qa-domain-title">Domain 3: Multi-Object Tracking &amp; Kinematic Trajectory Forecasting</div>
+
+<div class="qa-card domain-kinematics">
+  <div class="qa-q"><span class="qa-badge badge-kinematics">Tracking</span> Q3.1: Why use a classical SORT Kalman filter instead of modern deep trackers (DeepSORT, ByteTrack)?</div>
+  <p class="qa-a"><strong>Strict Real-Time Latency Budgeting:</strong> DeepSORT executes a secondary deep Re-Identification (Re-ID) convolutional neural network on every detected vehicle crop in every frame. On a 4-core edge CPU, extracting visual appearance embeddings for 5–10 vehicles would add 25–60 ms of latency per frame, immediately exceeding the entire 33.3ms real-time budget. Classical SORT uses a 7-state continuous linear Kalman filter with Hungarian bipartite matching based strictly on spatial Intersection-over-Union (IoU), executing in &lt; 0.3 ms per frame. This preserves 99% of the CPU budget for detector inference and kinematic forecasting.</p>
+</div>
+
+<div class="qa-card domain-kinematics">
+  <div class="qa-q"><span class="qa-badge badge-kinematics">Metrics</span> Q3.2: How is Resolution Time Margin (RTM) calculated, and why is it superior to static mAP@50?</div>
+  <p class="qa-a"><strong>Temporal Safety Metric:</strong> Static mAP@50 measures post-hoc spatial localization on isolated static frames, giving zero insight into temporal safety dynamics. RTM measures the actual physical time (in seconds) between the initial automated pre-crash warning and the ground-truth physical impact: RTM = t_impact - t_alert. In active collision avoidance, an alert issued 1.2 s before impact allows automated braking or V2X pre-crash warnings to mitigate or avert catastrophe; an accurate detection delivered 0.05 s before impact—regardless of high mAP—is functionally useless.</p>
+</div>
+
+<div class="qa-card domain-kinematics">
+  <div class="qa-q"><span class="qa-badge badge-kinematics">Anticipation</span> Q3.3: Why did YOLO26-Small achieve a higher RTM (1.35s) than Nano (0.91s) despite much lower FPS?</div>
+  <p class="qa-a"><strong>Spatial Receptive Field vs. Temporal Sampling:</strong> Small's deeper backbone and higher capacity extract distinctive vehicle features 3–5 frames earlier as oncoming vehicles enter the camera field of view at very small pixel scales (&lt; 30px). However, this earlier detection comes at a fatal operational cost: Small updates at only 10 FPS (100 ms latency), leaving large temporal gaps during rapid trajectory maneuvers. Nano updates at 32–48 FPS (20–31 ms latency), maintaining continuous, high-frequency trajectory tracking.</p>
+</div>
+
+<div class="qa-card domain-kinematics">
+  <div class="qa-q"><span class="qa-badge badge-kinematics">Kinematics</span> Q3.4: How does Coordinate Jitter Variance directly degrade kinematic collision forecasting?</div>
+  <p class="qa-a"><strong>Derivative Noise Amplification:</strong> Kinematic Time-to-Collision (TTC) is computed from relative closing velocity: v_c = -d/dt [dist(t)]. Because velocity is the first temporal derivative of position (&Delta;x / &Delta;t) and acceleration is the second derivative, spatial bounding-box centroid jitter (high &sigma;&sup2;_jitter) injects massive noise spikes into the Kalman velocity states. If jitter artificially inflates closing velocity v_c, predicted TTC plummets, triggering false-positive pre-crash alarms. Keeping jitter low (&le; 90 px&sup2;) is critical for stable trajectory forecasting.</p>
+</div>
+
+<div class="qa-domain-title">Domain 4: Dataset Integrity, Evaluation Metrics &amp; Real-World Safety</div>
+
+<div class="qa-card domain-safety">
+  <div class="qa-q"><span class="qa-badge badge-safety">Dataset</span> Q4.1: Why are static mAP@50 scores low (~0.04 to 0.06) across the TU-DAT dataset?</div>
+  <p class="qa-a"><strong>Visual Domain Shift &amp; Crash Dynamics:</strong> TU-DAT consists of uncurated real-world dashcam recordings with aggressive camera shake, sudden vibration during crashes, rain, headlight glare, severe motion blur, and rapid rotation. The models evaluated were pre-trained on canonical COCO images without crash-specific fine-tuning. Despite lower static mAP, the integrated SORT tracking filter and kinematic temporal aggregation maintained robust trajectory estimation through intermittent detection dropouts, correctly triggering pre-crash alerts and yielding 0.0% false alarms on control videos.</p>
+</div>
+
+<div class="qa-card domain-safety">
+  <div class="qa-q"><span class="qa-badge badge-safety">Safety</span> Q4.2: How did the system achieve a 0.0% False Positive Rate (FPR) on control videos?</div>
+  <p class="qa-a"><strong>Multi-Tier Kinematic Gating:</strong> Pre-crash warnings require four simultaneous conditions: (1) tracked vehicle status with active Kalman track lifetime &ge; 3 frames; (2) minimum closing speed v_c &gt; 30 px/s; (3) predicted Time-to-Collision TTC &lt; 2.0 s; and (4) lateral miss distance at Closest Point of Approach (d_min) within the physical vehicle collision radius. Normal traffic in control sequences maintains safe lateral margins (d_min &gt; R) or positive/zero closing velocities, cleanly preventing false alarms without sacrificing genuine collision anticipation.</p>
+</div>
+
+<div class="qa-card domain-safety">
+  <div class="qa-q"><span class="qa-badge badge-safety">Hazard</span> Q4.3: What is "intra-frame blind travel distance", and how does it create a fatal safety hazard?</div>
+  <p class="qa-a"><strong>Kinematic Blind Spot Hazard:</strong> At an inference latency of &tau; seconds, a vehicle traveling at velocity v covers a distance d = v &times; &tau; during which the perception system cannot update its state. For YOLO26-Small running at 160.22 ms/frame (6.24 FPS), a vehicle traveling at 60 km/h (16.67 m/s) moves <strong>2.67 meters</strong> blind between successive perception frames. At 100 km/h, blind distance reaches <strong>4.45 meters</strong>—more than a full car length. For YOLO26-Nano at 31.2 ms/frame, blind distance is restricted to <strong>0.52 meters</strong>, enabling immediate reaction to sudden evasive maneuvers.</p>
+</div>
+
+<div class="qa-domain-title">Domain 5: Practical Edge Deployment &amp; Intelligent Transportation Systems</div>
+
+<div class="qa-card domain-deploy">
+  <div class="qa-q"><span class="qa-badge badge-deploy">Recommendation</span> Q5.1: What is the definitive, Pareto-optimal engineering recommendation for smart intersections?</div>
+  <p class="qa-a"><strong>Deployment Target:</strong> Deploy <strong><code>yolo26n_fp16</code></strong>. On standard 4-core edge CPU nodes without dedicated NPUs, <code>yolo26n_fp16</code> is the only configuration that satisfies the &ge; 30 FPS real-time threshold (32.05 FPS constrained, 43.04 FPS unconstrained), maintains a 0.97–1.69 s warning margin, produces 0.0% false alarms, and cuts model storage and transmission bandwidth by 50% (4.75 MB).</p>
+</div>
+
+<div class="qa-card domain-deploy">
+  <div class="qa-q"><span class="qa-badge badge-deploy">Hardware</span> Q5.2: If an agency mandates YOLO26-Small for higher feature resolution, what hardware changes are required?</div>
+  <p class="qa-a"><strong>Mandatory Edge NPU/GPU Provisioning:</strong> The agency must provision a dedicated edge AI accelerator (NPU or Tensor Core GPU, e.g., Hailo-8, Google Coral TPU, or NVIDIA Jetson Orin Nano). On an unaccelerated edge CPU, YOLO26-Small is fundamentally latency-bottlenecked (6–10 FPS) and unsafe for active collision anticipation.</p>
+</div>
+
+<div class="qa-card domain-deploy">
+  <div class="qa-q"><span class="qa-badge badge-deploy">V2X</span> Q5.3: How does this edge perception pipeline integrate with Vehicle-to-Everything (V2X) communication standards?</div>
+  <p class="qa-a"><strong>Sub-55ms End-to-End Latency:</strong> Roadside Units (RSUs) broadcast standard SAE J2735 / ETSI CAM (Cooperative Awareness Messages) or DENM (Decentralized Environmental Notification Messages) over C-V2X (PC5 interface) or DSRC (802.11p). Because V2X transmission latency is typically 10–25 ms, an edge inference latency of &le; 31 ms (<code>yolo26n_fp16</code>) ensures total end-to-end perception-to-transmission latency of &lt; 55 ms, comfortably delivering pre-crash warnings within the driver's 0.75–1.5 s reaction window.</p>
+</div>
+
+<h2>7. Final Academic Conclusions for CS 493</h2>
 <ol>
   <li><b>Validation of Gap A:</b> Architectural scaling from YOLO26-Nano to YOLO26-Small induces a severe latency penalty ($54.89	ext{--}105.85\,	ext{ms/frame}$ vs. $20.70	ext{--}23.75\,	ext{ms/frame}$ unconstrained, and $94.02	ext{--}160.22\,	ext{ms/frame}$ constrained), reducing throughput to single digits ($6.2	ext{--}10.6\,	ext{FPS}$) and leading to dangerous vehicular blind travel distances ($> 2.6\,	ext{meters}$). Scaled detectors cannot be deployed on edge CPUs without dedicated hardware ASICs.</li>
   <li><b>The INT8 CPU Emulation Paradox:</b> Without specialized VNNI/AVX-512 hardware support, INT8 quantization incurs software quant/dequant emulation penalties that make INT8 Nano ($17.02\,	ext{FPS}$ constrained) slower than FP16 ($32.05\,	ext{FPS}$ constrained), dropping it below the 20 FPS threshold.</li>
