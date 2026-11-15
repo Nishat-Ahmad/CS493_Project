@@ -578,7 +578,7 @@ def main() -> None:
     parser.add_argument("--warmup-frames", type=int, default=10, help="Number of warmup frames (default: 10)")
     parser.add_argument("--max-frames", type=int, default=None, help="Max frames per sequence")
     parser.add_argument("--enforce-cpu-affinity", action="store_true", help="Pin CPU affinity to simulate 4-core edge CPU")
-    parser.add_argument("--config", type=str, default=None, help="Specific configuration name to run (e.g. yolo11n_fp32)")
+    parser.add_argument("--config", type=str, default=None, help="Specific configuration name to run (e.g. yolo26n_fp32)")
     args = parser.parse_args()
 
     runner = EdgeBenchmarkRunner(

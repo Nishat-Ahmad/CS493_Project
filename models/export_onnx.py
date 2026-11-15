@@ -35,10 +35,10 @@ except ImportError:
 
 
 def export_fp32_onnx(model_variant: str, weights_dir: Path) -> Path:
-    """Export YOLOv11 variant to FP32 ONNX.
+    """Export YOLO26 variant to FP32 ONNX.
 
     Args:
-        model_variant: 'yolo11n' or 'yolo11s'.
+        model_variant: 'yolo26n' or 'yolo26s'.
         weights_dir: Output directory path.
 
     Returns:
@@ -78,10 +78,10 @@ def export_fp32_onnx(model_variant: str, weights_dir: Path) -> Path:
 
 
 def export_fp16_onnx(model_variant: str, weights_dir: Path, fp32_onnx_path: Path) -> Path:
-    """Export or convert YOLOv11 variant to FP16 ONNX.
+    """Export or convert YOLO26 variant to FP16 ONNX.
 
     Args:
-        model_variant: 'yolo11n' or 'yolo11s'.
+        model_variant: 'yolo26n' or 'yolo26s'.
         weights_dir: Output directory path.
         fp32_onnx_path: Path to the base FP32 ONNX model.
 

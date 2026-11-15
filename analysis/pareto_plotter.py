@@ -103,8 +103,6 @@ def plot_pareto_throughput_vs_rtm(
     marker_map = {
         "yolo26n": "o",  # Circle for Nano
         "yolo26s": "s",  # Square for Small
-        "yolo11n": "o",
-        "yolo11s": "s",
     }
 
     # Smart label offsets to prevent collision for clustered points
@@ -115,12 +113,6 @@ def plot_pareto_throughput_vs_rtm(
         "yolo26s_fp32": (28, -16),
         "yolo26s_fp16": (-28, -16),
         "yolo26s_int8": (0, 18),
-        "yolo11n_fp32": (0, 16),
-        "yolo11n_fp16": (0, 16),
-        "yolo11n_int8": (0, -22),
-        "yolo11s_fp32": (28, -16),
-        "yolo11s_fp16": (-28, -16),
-        "yolo11s_int8": (0, 18),
     }
 
     for idx, row in valid_df.iterrows():
@@ -257,12 +249,12 @@ def plot_jitter_vs_precision(
     small_errs: List[float] = []
 
     for p in precisions:
-        row_n = df[(df["variant"].isin(["yolo26n", "yolo11n"])) & (df["precision"] == p)]
+        row_n = df[(df["variant"] == "yolo26n") & (df["precision"] == p)]
         nano_jitters.append(float(row_n["jitter_variance"].values[0]) if not row_n.empty else 0.0)
         n_err = float(row_n["std_jitter_variance"].values[0]) if not row_n.empty and "std_jitter_variance" in row_n and not pd.isna(row_n["std_jitter_variance"].values[0]) else 0.0
         nano_errs.append(n_err)
 
-        row_s = df[(df["variant"].isin(["yolo26s", "yolo11s"])) & (df["precision"] == p)]
+        row_s = df[(df["variant"] == "yolo26s") & (df["precision"] == p)]
         small_jitters.append(float(row_s["jitter_variance"].values[0]) if not row_s.empty else 0.0)
         s_err = float(row_s["std_jitter_variance"].values[0]) if not row_s.empty and "std_jitter_variance" in row_s and not pd.isna(row_s["std_jitter_variance"].values[0]) else 0.0
         small_errs.append(s_err)
@@ -348,7 +340,7 @@ def plot_latency_vs_throughput(
     ax.axvline(20.0, color="#dc2626", linestyle=":", linewidth=1.8, label="20 FPS Real-Time Threshold")
 
     color_map = {"FP32": "#2563eb", "FP16": "#ea580c", "INT8": "#16a34a"}
-    marker_map = {"yolo26n": "o", "yolo26s": "s", "yolo11n": "o", "yolo11s": "s"}
+    marker_map = {"yolo26n": "o", "yolo26s": "s"}
 
     for _, row in df.iterrows():
         c = color_map.get(row["precision"], "#7f7f7f")
@@ -358,7 +350,7 @@ def plot_latency_vs_throughput(
         if "std_fps" in row and "std_latency_ms" in row and not pd.isna(row["std_latency_ms"]):
             ax.errorbar(row["fps"], row["mean_latency_ms"], xerr=float(row.get("std_fps", 0)), yerr=float(row["std_latency_ms"]), fmt="none", ecolor=c, alpha=0.4, capsize=3, zorder=2)
 
-        offset_y = 6 if row["variant"] == "yolo11n" else -14
+        offset_y = 6 if row["variant"] == "yolo26n" else -14
         ax.annotate(
             f"{row['config']}\n({row['mean_latency_ms']:.1f}ms)",
             (row["fps"], row["mean_latency_ms"]),
