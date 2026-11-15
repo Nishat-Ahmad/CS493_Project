@@ -70,6 +70,8 @@ def export_fp32_onnx(model_variant: str, weights_dir: Path) -> Path:
     exported_path = Path(exported)
     if exported_path.resolve() != target_onnx.resolve():
         shutil.copyfile(exported_path, target_onnx)
+        if exported_path.exists() and exported_path != target_onnx:
+            exported_path.unlink(missing_ok=True)
 
     print(f"[Export] FP32 ONNX saved to {target_onnx}")
     return target_onnx
@@ -111,7 +113,9 @@ def export_fp16_onnx(model_variant: str, weights_dir: Path, fp32_onnx_path: Path
         )
         exp_path = Path(exported)
         if exp_path.exists():
-            shutil.copyfile(exp_path, target_onnx)
+            if exp_path.resolve() != target_onnx.resolve():
+                shutil.copyfile(exp_path, target_onnx)
+                exp_path.unlink(missing_ok=True)
             exported_direct = True
             print(f"[Export] Direct FP16 ONNX saved to {target_onnx}")
     except Exception as e:
