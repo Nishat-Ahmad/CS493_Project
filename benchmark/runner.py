@@ -180,12 +180,12 @@ class EdgeBenchmarkRunner:
     """Executes multi-video edge-constrained benchmarking across 6 model configurations."""
 
     TARGET_CONFIGURATIONS = [
-        {"config": "yolo11n_fp32", "variant": "yolo11n", "precision": "FP32", "file": "yolo11n_fp32.onnx"},
-        {"config": "yolo11n_fp16", "variant": "yolo11n", "precision": "FP16", "file": "yolo11n_fp16.onnx"},
-        {"config": "yolo11n_int8", "variant": "yolo11n", "precision": "INT8", "file": "yolo11n_int8.onnx"},
-        {"config": "yolo11s_fp32", "variant": "yolo11s", "precision": "FP32", "file": "yolo11s_fp32.onnx"},
-        {"config": "yolo11s_fp16", "variant": "yolo11s", "precision": "FP16", "file": "yolo11s_fp16.onnx"},
-        {"config": "yolo11s_int8", "variant": "yolo11s", "precision": "INT8", "file": "yolo11s_int8.onnx"},
+        {"config": "yolo26n_fp32", "variant": "yolo26n", "precision": "FP32", "file": "yolo26n_fp32.onnx"},
+        {"config": "yolo26n_fp16", "variant": "yolo26n", "precision": "FP16", "file": "yolo26n_fp16.onnx"},
+        {"config": "yolo26n_int8", "variant": "yolo26n", "precision": "INT8", "file": "yolo26n_int8.onnx"},
+        {"config": "yolo26s_fp32", "variant": "yolo26s", "precision": "FP32", "file": "yolo26s_fp32.onnx"},
+        {"config": "yolo26s_fp16", "variant": "yolo26s", "precision": "FP16", "file": "yolo26s_fp16.onnx"},
+        {"config": "yolo26s_int8", "variant": "yolo26s", "precision": "INT8", "file": "yolo26s_int8.onnx"},
     ]
 
     # COCO vehicle classes: car (2), motorcycle (3), bus (5), truck (7)
@@ -276,19 +276,20 @@ class EdgeBenchmarkRunner:
 
         # Determine frame range to evaluate
         total_available = len(sequence) if hasattr(sequence, "__len__") else sequence.total_frames
+        start_f = 0
         if self.max_eval_frames is not None:
-            max_f = min(total_available, self.max_eval_frames)
+            end_f = min(total_available, self.max_eval_frames)
         elif is_negative_control:
-            max_f = min(total_available, 250)
+            end_f = min(total_available, 200)
         elif sequence.accident_frame is not None:
-            # Evaluate the complete anticipation window up to 30 frames post-impact
-            max_f = min(total_available, sequence.accident_frame + 30)
+            start_f = max(0, sequence.accident_frame - 150)
+            end_f = min(total_available, sequence.accident_frame + 30)
         else:
-            max_f = total_available
+            end_f = total_available
 
         annotated_keys = set(sequence.annotations_by_frame.keys()) if hasattr(sequence, "annotations_by_frame") else set()
 
-        for f_idx in range(max_f):
+        for f_idx in range(start_f, end_f):
             frame_img = sequence.get_frame(f_idx)
             if frame_img is None:
                 break

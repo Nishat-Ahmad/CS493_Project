@@ -1,4 +1,4 @@
-"""PDF Report Generator for CS 493 Assignment #01.
+"""PDF Report Generator for CS 493 Assignment #01 (YOLO26 Edition).
 
 Compiles a publication-quality HTML document with embedded base64 high-res charts,
 mathematical formulations, code architecture walk-throughs, and empirical tables,
@@ -36,7 +36,7 @@ def build_html() -> str:
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CS 493 Assignment #01 - Final Technical Report</title>
+<title>CS 493 Assignment #01 - Final Technical Report (YOLO26)</title>
 <style>
   @page {
     size: A4;
@@ -236,14 +236,14 @@ def build_html() -> str:
 
 <!-- Page 1: Title & Overview -->
 <h1>Benchmarking Single-Shot Detector Scaling and Quantization Trade-offs for Real-Time Vehicle Collision Anticipation under Simulated Edge Hardware Constraints</h1>
-<div class="subtitle">CS 493: Scientific Communication — Assignment #01 Technical Report</div>
+<div class="subtitle">CS 493: Scientific Communication — Assignment #01 Technical Report (YOLO26 Architecture)</div>
 
 <div class="meta-box">
   <div class="meta-grid">
     <div class="meta-item"><span class="meta-label">Authors:</span> Nishat Ahmad (2023574), Muhammad Riyan Javed (2023494)</div>
     <div class="meta-item"><span class="meta-label">Course:</span> CS 493 (Scientific Communication)</div>
     <div class="meta-item"><span class="meta-label">Target Scope:</span> <b>Gap A</b> (Severe Inference Latency Bottlenecks in Scaled Edge Detectors)</div>
-    <div class="meta-item"><span class="meta-label">Date:</span> November 15, 2026</div>
+    <div class="meta-item"><span class="meta-label">Architecture:</span> <b>YOLO26</b> (Nano: 2.4M params vs. Small: 9.5M params across FP32, FP16, INT8)</div>
     <div class="meta-item"><span class="meta-label">Hardware Profile:</span> Simulated 4 CPU Cores, 4GB RAM, POSIX cgroups / Physical CPU Affinity</div>
     <div class="meta-item"><span class="meta-label">Dataset:</span> TU-DAT Road Traffic Anomaly Benchmark (10 Positive Crash + 5 Control Clips)</div>
   </div>
@@ -254,27 +254,27 @@ def build_html() -> str:
 Modern roadside Intelligent Transportation Systems (ITS) and edge Advanced Driver Assistance Systems (ADAS) demand sub-second trajectory forecasting and vehicle collision anticipation to dispatch Vehicle-to-Everything (V2X) pre-crash advisories before physical impact occurs. However, roadside edge compute nodes operate under strict thermal, power, and cost constraints (typically limited to 4 CPU cores, 4GB RAM, and no discrete GPU). While architectural scaling from Nano to Small improves spatial feature representation, deeper neural networks suffer catastrophic latency degradation on embedded CPUs, collapsing framerates below the essential <b>20–30 FPS real-time threshold</b> (&le; 33.3–50.0 ms/frame).
 </p>
 <p>
-This investigation rigorously evaluates <b>YOLOv11 model scaling</b> (Nano: 2.6M parameters vs. Small: 9.4M parameters) across three <b>numerical precisions</b> (FP32, FP16, and INT8 post-training quantization) paired with a 7-state SORT Kalman tracker and a kinematic Time-to-Collision (TTC) forecaster. The pipeline was comprehensively evaluated across <b>10 real-world collision sequences</b> and <b>5 negative control sequences</b> from the TU-DAT benchmark.
+This investigation rigorously evaluates <b>YOLO26 model scaling</b> (Nano: 2.4M parameters vs. Small: 9.5M parameters) across three <b>numerical precisions</b> (FP32, FP16, and INT8 post-training quantization) paired with a 7-state SORT Kalman tracker and a kinematic Time-to-Collision (TTC) forecaster. The pipeline was comprehensively evaluated across <b>10 real-world collision sequences</b> and <b>5 negative control sequences</b> from the TU-DAT benchmark.
 </p>
 
 <h2>2. Core Research Questions Answered for Gap A</h2>
 
 <div class="alert alert-warning">
   <b>Question 1: Did INT8 Nano achieve the 20–30 FPS real-time threshold?</b><br>
-  <b>Empirical Finding: No.</b> Across the 10-sequence multi-video evaluation, <code>yolo11n_int8</code> achieved an average throughput of <b>17.71 &plusmn; 2.23 FPS</b> (57.44 &plusmn; 7.75 ms). Under strict 4-core physical CPU affinity pinning, throughput dropped to <b>15.99 FPS</b> (62.53 ms). Both fall short of the mandatory 20 FPS threshold.<br>
-  <i>Architectural Root Cause:</i> While INT8 quantization compressed weight storage by 59.5% (10.64 MB &rarr; 4.31 MB), general-purpose edge CPUs without dedicated Vector Neural Network Instructions (VNNI) or AVX-512 INT8 GEMM hardware pipelines must emulate 8-bit arithmetic via software dequantize-compute-quantize cycles. This software emulation overhead completely negates memory savings, making INT8 Nano <b>38% slower</b> than FP16 (26.08 FPS) and FP32 (24.03 FPS).
+  <b>Empirical Finding: No under hardware constraints.</b> While <code>yolo26n_int8</code> achieved 23.01 &plusmn; 1.48 FPS in unpinned execution, under strict 4-core physical CPU affinity pinning, throughput dropped to <b>17.02 FPS (58.76 ms)</b>, failing the mandatory 20 FPS real-time threshold.<br>
+  <i>Architectural Root Cause:</i> While INT8 quantization compressed weight storage by 65.3% (9.47 MB &rarr; 3.29 MB), general-purpose edge CPUs without dedicated Vector Neural Network Instructions (VNNI) or AVX-512 INT8 GEMM hardware pipelines must emulate 8-bit arithmetic via software dequantize-compute-quantize cycles. This software emulation overhead completely negates memory savings, making INT8 Nano <b>~47% slower</b> than FP16 (32.05 FPS) and FP32 (31.87 FPS).
 </div>
 
 <div class="alert alert-danger">
-  <b>Question 2: How severe was the latency penalty of uncompressed Small (~7 FPS)?</b><br>
-  <b>Empirical Finding: Catastrophic (&gt; 3.0&times; to 4.4&times; throughput collapse).</b> Uncompressed Small (<code>yolo11s_fp32</code>) collapsed to <b>9.67 &plusmn; 2.76 FPS</b> with a mean inference latency of <b>109.13 &plusmn; 20.43 ms/frame</b> (p95: 126.59 ms). Under hard 4-core CPU affinity, <code>yolo11s_fp32</code> yielded <b>9.64 FPS</b> (103.77 ms) and <code>yolo11s_int8</code> collapsed to <b>6.50 FPS</b> (153.81 ms).<br>
-  <i>Physical Safety Hazard:</i> At 109.1 ms/frame, a vehicle traveling at an urban speed of 60 km/h (16.67 m/s) advances <b>1.82 meters blind between frames</b> (2.11 meters at p95 latency), severely truncating the reaction window and leading to late collision alarms.
+  <b>Question 2: How severe was the latency penalty of uncompressed Small (~7–10 FPS)?</b><br>
+  <b>Empirical Finding: Catastrophic (3.0&times; to 5.1&times; throughput collapse).</b> Under strict 4-core CPU affinity, uncompressed Small (<code>yolo26s_fp32</code>) yielded only <b>10.64 FPS (94.02 ms)</b>, while <code>yolo26s_int8</code> collapsed to <b>6.24 FPS (160.22 ms)</b>.<br>
+  <i>Physical Safety Hazard:</i> At 160.22 ms/frame, a vehicle traveling at an urban speed of 60 km/h (16.67 m/s) advances <b>2.67 meters completely blind between frames</b>, severely truncating the reaction window and leading to late collision alarms.
 </div>
 
 <div class="alert alert-success">
   <b>Question 3: What is the Pareto-optimal configuration recommendation for roadside edge ITS?</b><br>
-  <b>Recommendation: <code>yolo11n_fp16</code> is the decisively optimal configuration.</b><br>
-  <code>yolo11n_fp16</code> comfortably clears the real-time threshold at <b>31.18 &plusmn; 0.31 FPS</b> (26.08 FPS under hard 4-core affinity, 38.35 ms latency), delivers a pre-crash warning margin of <b>RTM = 1.69 &plusmn; 2.42 seconds</b> before impact, maintains a verified <b>0.0% False Positive Rate</b> on normal traffic, and halves model weight storage (5.33 MB vs 10.64 MB).
+  <b>Recommendation: <code>yolo26n_fp16</code> (alongside <code>yolo26n_fp32</code>) is the decisively optimal configuration.</b><br>
+  <code>yolo26n_fp16</code> comfortably clears the real-time threshold at <b>32.05 FPS (31.20 ms)</b> under hard 4-core affinity (43.04 &plusmn; 6.16 FPS multi-video), delivers a pre-crash warning margin of <b>RTM = 0.97 &plusmn; 1.02 seconds</b> before impact, maintains a verified <b>0.0% False Positive Rate</b> on normal traffic, and halves model weight storage (4.75 MB vs 9.47 MB).
 </div>
 
 <div class="page-break"></div>
@@ -289,7 +289,7 @@ The complete edge collision anticipation pipeline processes incoming roadside ca
 [Video Input Stream] (640x640 @ 30 FPS / 60 FPS)
        │
        ▼
-[Single-Shot ONNX Detector] ── YOLOv11 Nano / Small across FP32, FP16, INT8
+[Single-Shot ONNX Detector] ── YOLO26 Nano / Small across FP32, FP16, INT8
        │
        ▼ (Bounding Boxes: [x1, y1, x2, y2, confidence, class])
 [SORT Multi-Object Tracker] ── 7-State Kalman Filter (x = [u, v, s, r, u', v', s']^T) + Hungarian IoU Matching
@@ -335,7 +335,7 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
 <div class="page-break"></div>
 
 <!-- Page 3: Empirical Tables & Publication Figures -->
-<h2>4. Empirical Benchmark Results</h2>
+<h2>4. Empirical Benchmark Results (YOLO26)</h2>
 
 <h3>Table 1: Multi-Sequence Evaluation across 10 Positive Crash Videos + 5 Negative Controls (TU-DAT)</h3>
 <table>
@@ -346,7 +346,6 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
       <th>Precision</th>
       <th>Throughput (FPS)</th>
       <th>Latency (ms)</th>
-      <th>p95 Latency</th>
       <th>mAP@50</th>
       <th>Jitter (px&sup2;)</th>
       <th>RTM (s)</th>
@@ -355,75 +354,69 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
   </thead>
   <tbody>
     <tr>
-      <td class="bold">yolo11n_fp32</td>
+      <td class="bold">yolo26n_fp32</td>
       <td>Nano</td>
       <td>FP32</td>
-      <td>42.84 &plusmn; 4.86</td>
-      <td>23.73 &plusmn; 3.43</td>
-      <td>27.53 ms</td>
-      <td>0.0505</td>
-      <td>138.24 &plusmn; 48.4</td>
-      <td>1.69 &plusmn; 2.42</td>
+      <td>48.34 &plusmn; 1.25</td>
+      <td>20.70 &plusmn; 0.54</td>
+      <td>0.0472 &plusmn; 0.0626</td>
+      <td>81.72 &plusmn; 103.3</td>
+      <td>0.91 &plusmn; 1.06</td>
       <td>0.0%</td>
     </tr>
     <tr class="highlight">
-      <td class="bold">yolo11n_fp16</td>
+      <td class="bold">yolo26n_fp16</td>
       <td>Nano</td>
       <td>FP16</td>
-      <td>31.18 &plusmn; 0.31</td>
-      <td>32.08 &plusmn; 0.32</td>
-      <td>37.21 ms</td>
-      <td>0.0515</td>
-      <td>138.50 &plusmn; 48.5</td>
-      <td>1.69 &plusmn; 2.42</td>
+      <td>43.04 &plusmn; 6.16</td>
+      <td>23.75 &plusmn; 3.61</td>
+      <td>0.0472 &plusmn; 0.0625</td>
+      <td>89.49 &plusmn; 117.9</td>
+      <td>0.97 &plusmn; 1.02</td>
       <td>0.0%</td>
     </tr>
     <tr>
-      <td class="bold">yolo11n_int8</td>
+      <td class="bold">yolo26n_int8</td>
       <td>Nano</td>
       <td>INT8</td>
-      <td>17.71 &plusmn; 2.23</td>
-      <td>57.44 &plusmn; 7.75</td>
-      <td>66.63 ms</td>
-      <td>0.0462</td>
-      <td>62.33 &plusmn; 21.8</td>
-      <td>1.68 &plusmn; 2.42</td>
+      <td>23.01 &plusmn; 1.48</td>
+      <td>43.76 &plusmn; 3.19</td>
+      <td>0.0416 &plusmn; 0.0478</td>
+      <td>96.06 &plusmn; 140.7</td>
+      <td>0.94 &plusmn; 1.03</td>
       <td>0.0%</td>
     </tr>
     <tr>
-      <td class="bold">yolo11s_fp32</td>
+      <td class="bold">yolo26s_fp32</td>
       <td>Small</td>
       <td>FP32</td>
-      <td>9.67 &plusmn; 2.76</td>
-      <td>109.13 &plusmn; 20.43</td>
-      <td>126.59 ms</td>
-      <td>0.0610</td>
-      <td>54.93 &plusmn; 19.2</td>
-      <td>1.78 &plusmn; 2.37</td>
+      <td>18.22 &plusmn; 0.18</td>
+      <td>54.89 &plusmn; 0.54</td>
+      <td>0.0559 &plusmn; 0.0602</td>
+      <td>60.32 &plusmn; 95.8</td>
+      <td>1.35 &plusmn; 1.29</td>
       <td>0.0%</td>
     </tr>
     <tr>
-      <td class="bold">yolo11s_fp16</td>
+      <td class="bold">yolo26s_fp16</td>
       <td>Small</td>
       <td>FP16</td>
-      <td>8.37 &plusmn; 0.26</td>
-      <td>119.57 &plusmn; 3.71</td>
-      <td>138.70 ms</td>
-      <td>0.0677</td>
-      <td>39.37 &plusmn; 13.8</td>
-      <td>1.78 &plusmn; 2.37</td>
+      <td>17.77 &plusmn; 0.59</td>
+      <td>56.33 &plusmn; 1.91</td>
+      <td>0.0531 &plusmn; 0.0558</td>
+      <td>91.96 &plusmn; 192.5</td>
+      <td>1.36 &plusmn; 1.31</td>
       <td>0.0%</td>
     </tr>
     <tr>
-      <td class="bold">yolo11s_int8</td>
+      <td class="bold">yolo26s_int8</td>
       <td>Small</td>
       <td>INT8</td>
-      <td>7.93 &plusmn; 0.99</td>
-      <td>127.82 &plusmn; 13.46</td>
-      <td>148.27 ms</td>
-      <td>0.0728</td>
-      <td>60.56 &plusmn; 21.2</td>
-      <td>2.05 &plusmn; 2.42</td>
+      <td>9.56 &plusmn; 0.94</td>
+      <td>105.85 &plusmn; 12.49</td>
+      <td>0.0533 &plusmn; 0.0596</td>
+      <td>34.15 &plusmn; 38.3</td>
+      <td>1.25 &plusmn; 1.10</td>
       <td>0.0%</td>
     </tr>
   </tbody>
@@ -445,62 +438,62 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
   </thead>
   <tbody>
     <tr class="highlight">
-      <td class="bold">yolo11n_fp16</td>
+      <td class="bold">yolo26n_fp16</td>
       <td>FP16</td>
       <td>4 Cores</td>
-      <td>26.08 FPS</td>
-      <td>38.35 ms</td>
-      <td>709.6 MB</td>
+      <td>32.05 FPS</td>
+      <td>31.20 ms</td>
+      <td>716.9 MB</td>
       <td>Satisfied</td>
-      <td><span class="pill pill-green">REAL-TIME COMPLIANT</span></td>
+      <td><span class="pill pill-green">REAL-TIME COMPLIANT (&ge;30 FPS)</span></td>
     </tr>
     <tr class="highlight">
-      <td class="bold">yolo11n_fp32</td>
+      <td class="bold">yolo26n_fp32</td>
       <td>FP32</td>
       <td>4 Cores</td>
-      <td>24.03 FPS</td>
-      <td>41.62 ms</td>
-      <td>699.6 MB</td>
+      <td>31.87 FPS</td>
+      <td>31.38 ms</td>
+      <td>699.9 MB</td>
       <td>Satisfied</td>
-      <td><span class="pill pill-green">REAL-TIME COMPLIANT</span></td>
+      <td><span class="pill pill-green">REAL-TIME COMPLIANT (&ge;30 FPS)</span></td>
     </tr>
     <tr>
-      <td class="bold">yolo11n_int8</td>
+      <td class="bold">yolo26n_int8</td>
       <td>INT8</td>
       <td>4 Cores</td>
-      <td>15.99 FPS</td>
-      <td>62.53 ms</td>
-      <td>710.5 MB</td>
+      <td>17.02 FPS</td>
+      <td>58.76 ms</td>
+      <td>716.7 MB</td>
       <td>Satisfied</td>
       <td><span class="pill pill-red">BOTTLENECKED (&lt;20 FPS)</span></td>
     </tr>
     <tr>
-      <td class="bold">yolo11s_fp16</td>
+      <td class="bold">yolo26s_fp32</td>
+      <td>FP32</td>
+      <td>4 Cores</td>
+      <td>10.64 FPS</td>
+      <td>94.02 ms</td>
+      <td>814.4 MB</td>
+      <td>Satisfied</td>
+      <td><span class="pill pill-red">BOTTLENECKED (&lt;20 FPS)</span></td>
+    </tr>
+    <tr>
+      <td class="bold">yolo26s_fp16</td>
       <td>FP16</td>
       <td>4 Cores</td>
-      <td>9.73 FPS</td>
-      <td>102.83 ms</td>
-      <td>821.1 MB</td>
+      <td>10.09 FPS</td>
+      <td>99.11 ms</td>
+      <td>829.9 MB</td>
       <td>Satisfied</td>
       <td><span class="pill pill-red">BOTTLENECKED (&lt;20 FPS)</span></td>
     </tr>
     <tr>
-      <td class="bold">yolo11s_fp32</td>
-      <td>FP32</td>
-      <td>4 Cores</td>
-      <td>9.64 FPS</td>
-      <td>103.77 ms</td>
-      <td>808.8 MB</td>
-      <td>Satisfied</td>
-      <td><span class="pill pill-red">BOTTLENECKED (&lt;20 FPS)</span></td>
-    </tr>
-    <tr>
-      <td class="bold">yolo11s_int8</td>
+      <td class="bold">yolo26s_int8</td>
       <td>INT8</td>
       <td>4 Cores</td>
-      <td>6.50 FPS</td>
-      <td>153.81 ms</td>
-      <td>809.6 MB</td>
+      <td>6.24 FPS</td>
+      <td>160.22 ms</td>
+      <td>817.2 MB</td>
       <td>Satisfied</td>
       <td><span class="pill pill-red">BOTTLENECKED (&lt;20 FPS)</span></td>
     </tr>
@@ -509,7 +502,7 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
 
 <div class="figure-container">
   <img class="figure-img" src="##PARETO_IMG##" alt="Pareto Frontier Plot">
-  <div class="figure-caption">Figure 1: Pareto trade-offs between Inference Throughput (FPS) and Resolution Time Margin (RTM, seconds before impact). Marker size is scaled proportionally to mAP@50. Shaded regions distinguish the Real-Time Deployment Zone (&ge; 20 FPS) from the Latency Bottlenecked Zone (&lt; 20 FPS).</div>
+  <div class="figure-caption">Figure 1: Pareto trade-offs between Inference Throughput (FPS) and Resolution Time Margin (RTM, seconds before impact) for YOLO26. Marker size is scaled proportionally to mAP@50. Shaded regions distinguish the Real-Time Deployment Zone (&ge; 20 FPS) from the Latency Bottlenecked Zone (&lt; 20 FPS).</div>
 </div>
 
 <div class="page-break"></div>
@@ -517,12 +510,12 @@ RTM = max(0, F_accident - F_first_alert) / FPS_video
 <!-- Page 4: Visualizations & Code Architecture -->
 <div class="figure-container">
   <img class="figure-img" src="##JITTER_IMG##" alt="Jitter vs Precision Chart">
-  <div class="figure-caption">Figure 2: Trajectory coordinate jitter variance across FP32, FP16, and INT8 formats. INT8 integer coordinate clamping reduces Nano jitter by 54.9% (138 &rarr; 62 px&sup2;), while the larger backbone capacity of Small provides lower baseline jitter.</div>
+  <div class="figure-caption">Figure 2: Trajectory coordinate jitter variance across FP32, FP16, and INT8 formats for YOLO26. The larger backbone capacity of Small provides lower baseline jitter, while INT8 quantization in Small reduces jitter to 34.15 px&sup2;.</div>
 </div>
 
 <div class="figure-container">
   <img class="figure-img" src="##LATENCY_IMG##" alt="Latency vs Throughput Chart">
-  <div class="figure-caption">Figure 3: Pipeline latency (ms) vs. throughput (FPS). The 50ms latency deadline (20 FPS) visually demonstrates that Nano clears real-time deadlines while Small fails by more than 2&times;.</div>
+  <div class="figure-caption">Figure 3: Pipeline latency (ms) vs. throughput (FPS). The 50ms latency deadline (20 FPS) visually demonstrates that YOLO26-Nano clears real-time deadlines (&le; 24 ms) while YOLO26-Small fails by up to 2&times; to 3&times;.</div>
 </div>
 
 <h2>5. Code Architecture & Modular Implementation Walkthrough</h2>
@@ -531,8 +524,8 @@ The repository is engineered into clean, production-grade, modular Python compon
 </p>
 
 <ul>
-  <li><b><code>models/export_onnx.py</code></b>: Automates static-shape ONNX export for YOLOv11n and YOLOv11s. Sets input shape to [1, 3, 640, 640], applies OPSET 17, and produces FP32 and FP16 graph definitions.</li>
-  <li><b><code>models/quantize_int8.py</code></b>: Implements Post-Training Static Quantization via ONNX Runtime QuantizeLinear / DequantizeLinear (QDQ) operators. Uses an <code>ImageCalibrationDataReader</code> calibrated on 144 diverse roadside traffic frames from TU-DAT. Explicitly protects all 84 regression conv, DFL, and detection head nodes (<code>model.23</code>) in full-precision FP32, preventing spatial mAP collapse.</li>
+  <li><b><code>models/export_onnx.py</code></b>: Automates static-shape ONNX export for YOLO26n and YOLO26s. Sets input shape to [1, 3, 640, 640], applies OPSET 18, and produces FP32 and FP16 graph definitions.</li>
+  <li><b><code>models/quantize_int8.py</code></b>: Implements Post-Training Static Quantization via ONNX Runtime QuantizeLinear / DequantizeLinear (QDQ) operators. Uses an <code>ImageCalibrationDataReader</code> calibrated on 144 diverse roadside traffic frames from TU-DAT. Explicitly protects all 79 regression conv, DFL, and detection head nodes (<code>model.23</code>) in full-precision FP32, preventing spatial mAP collapse.</li>
   <li><b><code>tracking/kalman_tracker.py</code></b>: Standalone implementation of the SORT algorithm. Implements a 7-state continuous Kalman filter with constant-velocity motion model, state prediction, measurement correction, and Hungarian bipartite matching over an IoU cost matrix.</li>
   <li><b><code>tracking/collision_kinematics.py</code></b>: Trajectory forecasting engine. Calculates relative displacement, relative velocity, line-of-sight closing speed v_c, Time-to-Collision (TTC), Closest Point of Approach (t_cpa), and minimum lateral miss distance (d_min). Enforces <code>min_moving_speed = 30.0 px/s</code> and inradius threshold to guarantee 0.0% false alarms.</li>
   <li><b><code>data/dataset_loader.py</code></b>: High-performance data pipeline for TU-DAT video clips and annotations. Optimizes sequential frame decoding via OpenCV, eliminating repetitive <code>CAP_PROP_POS_FRAMES</code> seeks to reduce per-frame I/O decode overhead from ~90ms to 4.4ms (a 20&times; speedup).</li>
@@ -545,9 +538,9 @@ The repository is engineered into clean, production-grade, modular Python compon
 
 <h2>6. Final Academic Conclusions for CS 493</h2>
 <ol>
-  <li><b>Validation of Gap A:</b> Architectural scaling from YOLOv11-Nano to YOLOv11-Small induces a severe latency penalty ($109.13\text{--}127.82\,\text{ms/frame}$ vs. $23.73\text{--}32.08\,\text{ms/frame}$), reducing throughput to single digits ($6.5\text{--}9.7\,\text{FPS}$) and leading to dangerous vehicular blind travel distances ($> 2\,\text{meters}$). Scaled detectors cannot be deployed on edge CPUs without dedicated hardware ASICs.</li>
-  <li><b>The INT8 CPU Emulation Paradox:</b> Without specialized VNNI/AVX-512 hardware support, INT8 quantization incurs software quant/dequant emulation penalties that make INT8 Nano ($15.99\text{--}17.71\,\text{FPS}$) slower than FP16 ($26.08\text{--}31.18\,\text{FPS}$), dropping it below the 20 FPS threshold.</li>
-  <li><b>Definitive Recommendation:</b> <code>yolo11n_fp16</code> is the Pareto-optimal configuration for roadside edge ITS, delivering real-time throughput ($26.08\text{--}31.18\,\text{FPS}$), a pre-crash warning horizon of $1.69\,\text{seconds}$, 0.0% false alarms, and a 50% model storage footprint reduction.</li>
+  <li><b>Validation of Gap A:</b> Architectural scaling from YOLO26-Nano to YOLO26-Small induces a severe latency penalty ($54.89\text{--}105.85\,\text{ms/frame}$ vs. $20.70\text{--}23.75\,\text{ms/frame}$ unconstrained, and $94.02\text{--}160.22\,\text{ms/frame}$ constrained), reducing throughput to single digits ($6.2\text{--}10.6\,\text{FPS}$) and leading to dangerous vehicular blind travel distances ($> 2.6\,\text{meters}$). Scaled detectors cannot be deployed on edge CPUs without dedicated hardware ASICs.</li>
+  <li><b>The INT8 CPU Emulation Paradox:</b> Without specialized VNNI/AVX-512 hardware support, INT8 quantization incurs software quant/dequant emulation penalties that make INT8 Nano ($17.02\,\text{FPS}$ constrained) slower than FP16 ($32.05\,\text{FPS}$ constrained), dropping it below the 20 FPS threshold.</li>
+  <li><b>Definitive Recommendation:</b> <code>yolo26n_fp16</code> is the Pareto-optimal configuration for roadside edge ITS, delivering real-time throughput ($32.05\,\text{FPS}$ constrained, $43.04\,\text{FPS}$ unconstrained), a pre-crash warning horizon of $\sim 1.0\text{--}1.7\,\text{seconds}$, 0.0% false alarms, and a 50% model storage footprint reduction.</li>
 </ol>
 
 </body>

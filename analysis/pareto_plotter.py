@@ -101,12 +101,20 @@ def plot_pareto_throughput_vs_rtm(
         "INT8": "#16a34a",  # Fresh Green
     }
     marker_map = {
-        "yolo11n": "o",  # Circle for Nano
-        "yolo11s": "s",  # Square for Small
+        "yolo26n": "o",  # Circle for Nano
+        "yolo26s": "s",  # Square for Small
+        "yolo11n": "o",
+        "yolo11s": "s",
     }
 
     # Smart label offsets to prevent collision for clustered points
     custom_offsets = {
+        "yolo26n_fp32": (0, 16),
+        "yolo26n_fp16": (0, 16),
+        "yolo26n_int8": (0, -22),
+        "yolo26s_fp32": (28, -16),
+        "yolo26s_fp16": (-28, -16),
+        "yolo26s_int8": (0, 18),
         "yolo11n_fp32": (0, 16),
         "yolo11n_fp16": (0, 16),
         "yolo11n_int8": (0, -22),
@@ -218,8 +226,8 @@ def plot_pareto_throughput_vs_rtm(
     legend_elements = [
         plt.Line2D([0], [0], color="#dc2626", linestyle="--", lw=2, label="20 FPS Real-time Line"),
         plt.Line2D([0], [0], color="#dc2626", linestyle="-.", lw=2, label="Pareto Frontier"),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#4b5563", markersize=8, label="Nano (yolo11n)"),
-        plt.Line2D([0], [0], marker="s", color="w", markerfacecolor="#4b5563", markersize=8, label="Small (yolo11s)"),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#4b5563", markersize=8, label="Nano (yolo26n)"),
+        plt.Line2D([0], [0], marker="s", color="w", markerfacecolor="#4b5563", markersize=8, label="Small (yolo26s)"),
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=color_map["FP32"], markersize=8, label="FP32"),
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=color_map["FP16"], markersize=8, label="FP16"),
         plt.Line2D([0], [0], marker="o", color="w", markerfacecolor=color_map["INT8"], markersize=8, label="INT8"),
@@ -249,12 +257,12 @@ def plot_jitter_vs_precision(
     small_errs: List[float] = []
 
     for p in precisions:
-        row_n = df[(df["variant"] == "yolo11n") & (df["precision"] == p)]
+        row_n = df[(df["variant"].isin(["yolo26n", "yolo11n"])) & (df["precision"] == p)]
         nano_jitters.append(float(row_n["jitter_variance"].values[0]) if not row_n.empty else 0.0)
         n_err = float(row_n["std_jitter_variance"].values[0]) if not row_n.empty and "std_jitter_variance" in row_n and not pd.isna(row_n["std_jitter_variance"].values[0]) else 0.0
         nano_errs.append(n_err)
 
-        row_s = df[(df["variant"] == "yolo11s") & (df["precision"] == p)]
+        row_s = df[(df["variant"].isin(["yolo26s", "yolo11s"])) & (df["precision"] == p)]
         small_jitters.append(float(row_s["jitter_variance"].values[0]) if not row_s.empty else 0.0)
         s_err = float(row_s["std_jitter_variance"].values[0]) if not row_s.empty and "std_jitter_variance" in row_s and not pd.isna(row_s["std_jitter_variance"].values[0]) else 0.0
         small_errs.append(s_err)
@@ -267,13 +275,13 @@ def plot_jitter_vs_precision(
     rects1 = ax.bar(
         x - width / 2.0, nano_jitters, width,
         yerr=nano_errs if any(e > 0 for e in nano_errs) else None,
-        capsize=4.5, label="YOLOv11-Nano (2.6M params)",
+        capsize=4.5, label="YOLO26-Nano (2.4M params)",
         color="#3b82f6", edgecolor="#1d4ed8", linewidth=1.1, alpha=0.88
     )
     rects2 = ax.bar(
         x + width / 2.0, small_jitters, width,
         yerr=small_errs if any(e > 0 for e in small_errs) else None,
-        capsize=4.5, label="YOLOv11-Small (9.4M params)",
+        capsize=4.5, label="YOLO26-Small (9.5M params)",
         color="#ef4444", edgecolor="#b91c1c", linewidth=1.1, alpha=0.88
     )
 
@@ -340,7 +348,7 @@ def plot_latency_vs_throughput(
     ax.axvline(20.0, color="#dc2626", linestyle=":", linewidth=1.8, label="20 FPS Real-Time Threshold")
 
     color_map = {"FP32": "#2563eb", "FP16": "#ea580c", "INT8": "#16a34a"}
-    marker_map = {"yolo11n": "o", "yolo11s": "s"}
+    marker_map = {"yolo26n": "o", "yolo26s": "s", "yolo11n": "o", "yolo11s": "s"}
 
     for _, row in df.iterrows():
         c = color_map.get(row["precision"], "#7f7f7f")

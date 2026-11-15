@@ -5,12 +5,12 @@ Sequentially executes:
   2. Pytest execution of unit and mathematical validation test suite.
   3. ONNX model export (FP32, FP16) and INT8 calibration quantization.
   4. Benchmark execution under simulated edge CPU constraints across 6 configurations:
-     - yolo11n_fp32
-     - yolo11n_fp16
-     - yolo11n_int8
-     - yolo11s_fp32
-     - yolo11s_fp16
-     - yolo11s_int8
+     - yolo26n_fp32
+     - yolo26n_fp16
+     - yolo26n_int8
+     - yolo26s_fp32
+     - yolo26s_fp16
+     - yolo26s_int8
   5. Pareto and jitter trade-off visualization plotting.
   6. Final formatted console summary table of all metrics.
 """

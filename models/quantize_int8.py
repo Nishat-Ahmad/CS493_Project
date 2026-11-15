@@ -1,8 +1,8 @@
 """INT8 Post-Training Quantization module with Detection Head Protection.
 
-Performs static QDQ INT8 quantization for YOLOv11 models using ONNX Runtime.
+Performs static QDQ INT8 quantization for YOLO26 models using ONNX Runtime.
 Key Features:
-  1. Calibration Extraction: Automatically extracts 100-150 representative real-world
+  1. Calibration Extraction: Automatically extracts representative real-world
      traffic frames across day, dusk, night, low-light, and control sequences from TU-DAT.
   2. Detection Head Protection: Excludes the sensitive bounding-box regression and DFL
      layers (model.23 / Detect heads) from integer quantization to prevent coordinate
@@ -10,8 +10,8 @@ Key Features:
   3. Per-Channel Quantization: Uses QInt8 weights with per-channel scaling and QInt8
      activations for CPUExecutionProvider edge execution.
 Generates:
-  - weights/yolo11n_int8.onnx
-  - weights/yolo11s_int8.onnx
+  - weights/yolo26n_int8.onnx
+  - weights/yolo26s_int8.onnx
 """
 
 from __future__ import annotations
@@ -313,7 +313,7 @@ def run_int8_quantization(
         )
 
     results: Dict[str, Path] = {}
-    for var in ["yolo11n", "yolo11s"]:
+    for var in ["yolo26n", "yolo26s"]:
         fp32_file = weights_path / f"{var}_fp32.onnx"
         int8_file = weights_path / f"{var}_int8.onnx"
 

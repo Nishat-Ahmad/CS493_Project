@@ -1,14 +1,14 @@
-"""YOLOv11 ONNX model export module.
+"""YOLO26 ONNX model export module.
 
-Downloads official YOLOv11 checkpoints (yolo11n.pt, yolo11s.pt) and exports them
+Downloads official YOLO26 checkpoints (yolo26n.pt, yolo26s.pt) and exports them
 to ONNX format with static input dimensions (1, 3, 640, 640) for both:
-  - FP32 (half=False)
-  - FP16 (half=True / converted to float16)
+  - FP32
+  - FP16 (converted to float16)
 Outputs saved to:
-  - weights/yolo11n_fp32.onnx
-  - weights/yolo11n_fp16.onnx
-  - weights/yolo11s_fp32.onnx
-  - weights/yolo11s_fp16.onnx
+  - weights/yolo26n_fp32.onnx
+  - weights/yolo26n_fp16.onnx
+  - weights/yolo26s_fp32.onnx
+  - weights/yolo26s_fp16.onnx
 """
 
 from __future__ import annotations
@@ -147,7 +147,7 @@ def run_exports(output_dir: Optional[Path | str] = None) -> Dict[str, Path]:
     weights_path.mkdir(parents=True, exist_ok=True)
 
     results: Dict[str, Path] = {}
-    variants = ["yolo11n", "yolo11s"]
+    variants = ["yolo26n", "yolo26s"]
 
     for var in variants:
         fp32_path = export_fp32_onnx(var, weights_path)
